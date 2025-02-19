@@ -1,0 +1,28 @@
+on:
+  push:
+  workflow_dispatch:
+
+env:
+  HOME: "${{github.workspace}}\\home"
+  USERPROFILE: "${{github.workspace}}\\home"
+  ARCHITECTURE: aarch64
+  MSYSTEM: CLANGARM64
+  MINGW_PREFIX: clangarm64
+
+jobs:
+  gfw-installer:
+      runs-on: [Windows, ARM64]
+      steps:
+        # Added the artifact to the test VM (C:/arm64tmp) for testing
+        - name: Run the installer
+          shell: pwsh
+          run: |
+            $exePath = Get-ChildItem -Path C:/arm64tmp/*.exe | %{$_.FullName}
+            $installer = Start-Process -PassThru -Wait -FilePath "$exePath" -ArgumentList "/SILENT /VERYSILENT /NORESTART /SUPPRESSMSGBOXES /ALLOWDOWNGRADE=1 /LOG=installer.log"
+            $exitCode = $installer.ExitCode
+            if ($exitCode -ne 0) {
+              Write-Host "::error::Installer failed with exit code $exitCode!"
+              exit 1
+            }
+            "$env:ProgramFiles\Git\usr\bin" | Out-File -Encoding ascii -Append $env:GITHUB_PATH
+            "$env:ProgramFiles\Git\${{env.MINGW_PREFIX}}\bin" | Out-File -Encoding ascii -Append $env:GITHUB_PATH
