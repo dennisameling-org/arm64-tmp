@@ -17,6 +17,8 @@ jobs:
         - name: Run the installer
           shell: pwsh
           run: |
+            Get-Acl "C:\Program Files\Git" | Format-List
+            whoami
             $exePath = Get-ChildItem -Path C:/arm64tmp/*.exe | %{$_.FullName}
             $installer = Start-Process -PassThru -Wait -FilePath "$exePath" -ArgumentList "/SILENT /VERYSILENT /NORESTART /SUPPRESSMSGBOXES /ALLOWDOWNGRADE=1 /LOG=installer.log"
             $exitCode = $installer.ExitCode
